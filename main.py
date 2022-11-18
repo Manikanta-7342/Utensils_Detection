@@ -1,5 +1,6 @@
 import cv2 as cv # OpenCV computer vision library
-import numpy as np # Scientific computing library 
+import numpy as np # Scientific computing library
+import os 
  
 # Just use a subset of the classes
 classes = ["background", "person", "bicycle", "car", "motorcycle",
@@ -13,19 +14,28 @@ classes = ["background", "person", "bicycle", "car", "motorcycle",
   "pizza", "donut", "cake", "chair", "couch", "potted plant", "bed", "unknown", "dining table",
   "unknown", "unknown", "toilet", "unknown", "tv", "laptop", "mouse", "remote", "keyboard",
   "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "unknown",
-  "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush" ]
+  "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush","helmet" ]
  
 # Colors we will use for the object labels
 colors = np.random.uniform(0, 255, size=(len(classes), 3))
  
 # Open the webcam
-cam = cv.VideoCapture(0)
+cam = cv.VideoCapture("C:\\Users\\manik\\Downloads\\testing.mp4")
  
-pb  = 'frozen_inference_graph.pb'
-pbt = 'ssd_inception_v2_coco_2017_11_17.pbtxt'
+pb  = './frozen_inference_graph.pb'
+pbt = './ssd_inception_v2_coco_2017_11_17.pbtxt'
  
 # Read the neural network
 cvNet = cv.dnn.readNetFromTensorflow(pb,pbt)   
+
+# Properties
+height = int(cam.get(cv.CAP_PROP_FRAME_HEIGHT))
+width = int(cam.get(cv.CAP_PROP_FRAME_WIDTH))
+fps = int(cam.get(cv.CAP_PROP_FPS))
+
+# Video Writer 
+video_writer = cv.VideoWriter("./output.mp4", cv.VideoWriter_fourcc(*'mp4v'), fps, (width, height), isColor=True) 
+                                                                                        
  
 while True:
  
@@ -49,27 +59,33 @@ while True:
     
       # If you want all classes to be labeled instead of just forks, spoons, and knives, 
       # remove this line below (i.e. remove line 65)
-      if classes[idx] == 'fork' or classes[idx] == 'spoon' or classes[idx] == 'knife':          
-        left = detection[3] * cols
-        top = detection[4] * rows
-        right = detection[5] * cols
-        bottom = detection[6] * rows
-        cv.rectangle(img, (int(left), int(top)), (int(right), int(bottom)), (23, 230, 210), thickness=2)
-            
-        # draw the prediction on the frame
-        label = "{}: {:.2f}%".format(classes[idx],score * 100)
-        y = top - 15 if top - 15 > 15 else top + 15
-        cv.putText(img, label, (int(left), int(y)),cv.FONT_HERSHEY_SIMPLEX, 0.5, colors[idx], 2)
+      #if classes[idx] == 'helmet':          
+      left = detection[3] * cols
+      top = detection[4] * rows
+      right = detection[5] * cols
+      bottom = detection[6] * rows
+      cv.rectangle(img, (int(left), int(top)), (int(right), int(bottom)), (23, 230, 210), thickness=2)
+          
+      # draw the prediction on the frame
+      label = "{}: {:.2f}%".format(classes[idx],score * 100)
+      y = top - 15 if top - 15 > 15 else top + 15
+      cv.putText(img, label, (int(left), int(y)),cv.FONT_HERSHEY_SIMPLEX, 0.5, colors[idx], 2)
  
   # Display the frame
   cv.imshow('my webcam', img)
+
+  
  
   # Press ESC to quit
   if cv.waitKey(1) == 27: 
     break
- 
+# Write out frame 
+video_writer.write(img)
 # Stop filming
 cam.release()
  
 # Close down OpenCV
 cv.destroyAllWindows()
+
+# Release video writer
+video_writer.release()
