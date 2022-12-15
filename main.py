@@ -20,7 +20,7 @@ classes = ["background", "person", "bicycle", "car", "motorcycle",
 colors = np.random.uniform(0, 255, size=(len(classes), 3))
  
 # Open the webcam
-cam = cv.VideoCapture("C:\\Users\\manik\\Downloads\\testing.mp4")
+cam = cv.VideoCapture(0)
  
 pb  = './frozen_inference_graph.pb'
 pbt = './ssd_inception_v2_coco_2017_11_17.pbtxt'
@@ -55,11 +55,7 @@ while True:
     if score > 0.3:
  
       idx = int(detection[1])   # prediction class index. 
-      #print(idx)
-    
-      # If you want all classes to be labeled instead of just forks, spoons, and knives, 
-      # remove this line below (i.e. remove line 65)
-      #if classes[idx] == 'helmet':          
+
       left = detection[3] * cols
       top = detection[4] * rows
       right = detection[5] * cols
@@ -73,14 +69,12 @@ while True:
  
   # Display the frame
   cv.imshow('my webcam', img)
-
-  
  
   # Press ESC to quit
   if cv.waitKey(1) == 27: 
     break
-# Write out frame 
-video_writer.write(img)
+  # Write out frame
+  video_writer.write(img)
 # Stop filming
 cam.release()
  
